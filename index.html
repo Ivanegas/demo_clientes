@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cozy Time Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="assets/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Add Download Button -->
+    <!-- <div class="fixed top-4 left-4 z-50">
+        <a href="/download" class="download-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Descargar Proyecto</span>
+        </a>
+    </div> -->
+
+    <!-- Video Background -->
+    <div class="video-container">
+        <video id="background-video" autoplay loop muted playsinline>
+            <source
+                src="https://player.vimeo.com/external/434045526.sd.mp4?s=c27eecc69a27dbc4ff2b87d38afc35f1a9e7c02d&profile_id=164&oauth2_token_id=57447761"
+                type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+    </div>
+
+    <!-- Volume Control -->
+    <div class="volume-control" style="display: none;">
+        <button id="toggleMute" class="volume-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="volumeIcon">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+        </button>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0">
+    </div>
+
+    <div class="min-h-screen flex flex-col items-center justify-between p-12 pb-24">
+        <!-- Header -->
+        <div class="w-full flex justify-between items-start">
+            <!-- Clock -->
+            <div class="text-white clock-container">
+                <div class="text-6xl font-light mb-1" id="clock"></div>
+                <div class="text-lg opacity-80" id="date"></div>
+            </div>
+
+            <!-- Weather -->
+            <div class="weather-container">
+                <div class="text-lg">23° / 21° C</div>
+                <div class="text-sm opacity-80">RM 1</div>
+            </div>
+
+            <!-- Logo -->
+            <div class="logo-container" style="display: none;">
+                <div class="text-3xl font-light"></div>
+                <div class="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center"></div>
+            </div>
+        </div>
+
+
+        <!-- Welcome Message -->
+        <div class="text-center mt-12 welcome-container">
+            <!-- Hotel Logo -->
+            <div class="hotel-logo">
+                <img src="https://www.pngmart.com/files/23/Hotel-Logo-PNG-HD.png" alt="Hotel Logo">
+            </div>
+
+            <h1 class="welcome-text">Bienvenidos</h1>
+            <p class="subtitle-text">Le deseamos una agradable estancia</p>
+
+            <!-- Menu Carousel -->
+            <div class="carousel-container">
+                <button class="carousel-button" id="prevButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                </button>
+
+                <div class="menu-items" id="menuItems"></div>
+
+                <button class="carousel-button" id="nextButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div></div> <!-- Spacer -->
+    </div>
+
+    <script>
+        // Video and Audio Controls
+        const video = document.getElementById('background-video');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const toggleMute = document.getElementById('toggleMute');
+        const volumeIcon = document.getElementById('volumeIcon');
+
+        // Ensure video autoplay
+        video.play().catch(function (error) {
+            console.log("Video autoplay failed:", error);
+        });
+
+        volumeSlider.addEventListener('input', (e) => {
+            video.volume = e.target.value;
+            video.muted = false;
+            updateVolumeIcon(e.target.value);
+        });
+
+        toggleMute.addEventListener('click', () => {
+            video.muted = !video.muted;
+            if (video.muted) {
+                volumeSlider.value = 0;
+            } else {
+                volumeSlider.value = video.volume;
+            }
+            updateVolumeIcon(volumeSlider.value);
+        });
+
+        function updateVolumeIcon(volume) {
+            if (volume == 0) {
+                volumeIcon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="22" y1="2" x2="2" y2="22"></line>';
+            } else if (volume < 0.5) {
+                volumeIcon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+            } else {
+                volumeIcon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>';
+            }
+        }
+
+        // Menu Items Data
+        const menuItems = [
+            { icon: 'wifi', text: 'Wifi', link: 'wifi.html' },
+            { icon: 'phone', text: 'IPTV', link: "iptv.html" },
+            { icon: 'utensils', text: 'Ordenar Comida', link: 'menu.html' },
+            /* { icon: 'home', text: 'Habitaciones' },
+            { icon: 'dumbbell', text: 'Gimnasio' },
+            { icon: 'utensils', text: 'Ordenar Comida' } */
+        ];
+
+        let startIndex = 0;
+        const itemsToShow = 4;
+
+        // Clock and Date
+        function updateDateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+            const dateString = now.toLocaleDateString('es', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            document.getElementById('clock').textContent = timeString;
+            document.getElementById('date').textContent = dateString;
+        }
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // Menu Carousel
+        function updateCarousel() {
+            const menuContainer = document.getElementById('menuItems');
+            menuContainer.innerHTML = '';
+
+            const visibleItems = menuItems.slice(startIndex, startIndex + itemsToShow);
+
+            visibleItems.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = 'flex flex-col items-center menu-item';
+
+                // Si la opción tiene un enlace, envuelve el contenido en un <a>
+                const link = item.link ? `<a href="${item.link}" class="flex flex-col items-center menu-item">` : '';
+                const linkClose = item.link ? `</a>` : '';
+
+                menuItem.innerHTML = `
+            ${link}
+            <div class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    ${getIconPath(item.icon)}
+                </svg>
+            </div>
+            <span class="menu-text">${item.text}</span>
+            ${linkClose}
+        `;
+                menuContainer.appendChild(menuItem);
+            });
+
+            document.getElementById('prevButton').disabled = startIndex === 0;
+            document.getElementById('nextButton').disabled = startIndex >= menuItems.length - itemsToShow;
+        }
+
+        function getIconPath(iconName) {
+            const icons = {
+                'log-out': '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+                'phone': '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+                'wifi': '<path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>',
+                'home': '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+                'dumbbell': '<path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>',
+                'utensils': '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>'
+            };
+            return icons[iconName] || '';
+        }
+
+        document.getElementById('prevButton').addEventListener('click', () => {
+            if (startIndex > 0) {
+                startIndex--;
+                updateCarousel();
+            }
+        });
+
+        document.getElementById('nextButton').addEventListener('click', () => {
+            if (startIndex < menuItems.length - itemsToShow) {
+                startIndex++;
+                updateCarousel();
+            }
+        });
+
+        // Initialize carousel
+        updateCarousel();
+        // TV Navigation System
+        document.addEventListener('DOMContentLoaded', function () {
+            const focusableElements = 'button, [href], [tabindex]:not([tabindex="-1"])';
+            let currentFocus = 0;
+            const elements = [...document.querySelectorAll(focusableElements)];
+
+            // Set initial focus
+            if (elements.length) {
+                elements[0].focus();
+            }
+
+            // Handle keydown events
+            document.addEventListener('keydown', function (e) {
+                switch (e.key) {
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        currentFocus = Math.min(currentFocus + 1, elements.length - 1);
+                        elements[currentFocus].focus();
+                        break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        currentFocus = Math.max(currentFocus - 1, 0);
+                        elements[currentFocus].focus();
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        elements[currentFocus].click();
+                        break;
+                }
+            });
+
+            // Auto-hide mouse cursor after 3 seconds of inactivity
+            let cursorTimeout;
+            document.addEventListener('mousemove', function () {
+                document.body.style.cursor = 'default';
+                clearTimeout(cursorTimeout);
+                cursorTimeout = setTimeout(() => {
+                    document.body.style.cursor = 'none';
+                }, 3000);
+            });
+
+            // Initialize carousel
+            updateCarousel();
+
+            // Menu item focus handling
+            const menuItems = document.querySelectorAll('.menu-icon');
+            menuItems.forEach(item => {
+                item.setAttribute('tabindex', '0');
+                item.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        item.click();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
